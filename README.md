@@ -2,14 +2,13 @@
 
 ## Project Overview
 
-**Project Title**: Library Management System  
-**Level**: Intermediate  
-**Database**: `library_db`
+**Project Title**: Library Management System   
+**Database**: `library_management_db`
 
 This project demonstrates the implementation of a Library Management System using SQL. It includes creating and managing tables, performing CRUD operations, and executing advanced SQL queries. The goal is to showcase skills in database design, manipulation, and querying.
 
-![Library_project](https://github.com/najirh/Library-System-Management---P2/blob/main/library.jpg)
 
+![Library_project](https://plus.unsplash.com/premium_photo-1677567996070-68fa4181775a?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bGlicmFyeXxlbnwwfHwwfHx8MA%3D%3D)
 ## Objectives
 
 1. **Set up the Library Management System Database**: Create and populate the database with tables for branches, employees, members, books, issued status, and return status.
@@ -20,13 +19,13 @@ This project demonstrates the implementation of a Library Management System usin
 ## Project Structure
 
 ### 1. Database Setup
-![ERD](https://github.com/najirh/Library-System-Management---P2/blob/main/library_erd.png)
+![ERD](https://github.com/Kirthiga7/Library_Management_SQL/blob/main/ERD_Database.pgerd)
 
-- **Database Creation**: Created a database named `library_db`.
+- **Database Creation**: Created a database named `library_management_db`.
 - **Table Creation**: Created tables for branches, employees, members, books, issued status, and return status. Each table includes relevant columns and relationships.
 
 ```sql
-CREATE DATABASE library_db;
+CREATE DATABASE library_management_db;
 
 DROP TABLE IF EXISTS branch;
 CREATE TABLE branch
@@ -407,7 +406,26 @@ GROUP BY 1, 2
 ```
 
 **Task 18: Identify Members Issuing High-Risk Books**  
-Write a query to identify members who have issued books more than twice with the status "damaged" in the books table. Display the member name, book title, and the number of times they've issued damaged books.    
+Write a query to identify members who have issued books more than twice with the status "damaged" in the books table. Display the member name, book title, and the number of times they've issued damaged books. 
+```sql
+CREATE TABLE damaged_isbn
+AS
+SELECT i.issued_book_isbn AS dam_isbn
+FROM issued_status i
+JOIN return_status r
+ON r.issued_id=i.issued_id
+WHERE r.book_quality='Damaged';
+
+SELECT i.issued_emp_id, e.emp_name,i.issued_id,
+       i.issued_book_name,
+	   count(i.issued_emp_id) as no_of_timed_issued
+FROM issued_status i
+JOIN employee e 
+ON i.issued_emp_id = e.emp_id
+RIGHT JOIN damaged_isbn d
+ON i.issued_book_isbn = d.dam_isbn
+GROUP BY 1,2,3;
+```
 
 
 **Task 19: Stored Procedure**
@@ -486,7 +504,25 @@ Description: Write a CTAS query to create a new table that lists each member and
     Member ID
     Number of overdue books
     Total fines
+```sql
+DROP TABLE IF EXISTS overdue_books;
+CREATE TABLE overdue_books
+AS
+SELECT
+	m.member_id,m.member_name,issued_date,
+	count(member_id) AS no_of_books_overdue,
+	(CURRENT_DATE- issued_date) AS difference_in_days,
+	(CURRENT_DATE - issued_date) * 0.5 AS fine
+FROM members m
+JOIN issued_status i on  m.member_id = i.issued_member_id
+JOIN books b ON i.issued_book_isbn = b.isbn
+LEFT JOIN return_status r ON i.issued_id = r.issued_id
+WHERE r.return_id IS NULL
+AND (CURRENT_DATE - issued_date) >0
+GROUP BY 1,2,3;
 
+SELECT * FROM overdue_books;
+```
 
 
 ## Reports
@@ -499,24 +535,4 @@ Description: Write a CTAS query to create a new table that lists each member and
 
 This project demonstrates the application of SQL skills in creating and managing a library management system. It includes database setup, data manipulation, and advanced querying, providing a solid foundation for data management and analysis.
 
-## How to Use
 
-1. **Clone the Repository**: Clone this repository to your local machine.
-   ```sh
-   git clone https://github.com/najirh/Library-System-Management---P2.git
-   ```
-
-2. **Set Up the Database**: Execute the SQL scripts in the `database_setup.sql` file to create and populate the database.
-3. **Run the Queries**: Use the SQL queries in the `analysis_queries.sql` file to perform the analysis.
-4. **Explore and Modify**: Customize the queries as needed to explore different aspects of the data or answer additional questions.
-
-## Author - Zero Analyst
-
-This project showcases SQL skills essential for database management and analysis. For more content on SQL and data analysis, connect with me through the following channels:
-
-- **YouTube**: [Subscribe to my channel for tutorials and insights](https://www.youtube.com/@zero_analyst)
-- **Instagram**: [Follow me for daily tips and updates](https://www.instagram.com/zero_analyst/)
-- **LinkedIn**: [Connect with me professionally](https://www.linkedin.com/in/najirr)
-- **Discord**: [Join our community for learning and collaboration](https://discord.gg/36h5f2Z5PK)
-
-Thank you for your interest in this project!
